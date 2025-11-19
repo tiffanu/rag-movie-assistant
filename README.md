@@ -15,7 +15,7 @@
 - Двухэтапный поиск: широкий ретривал → точный отбор LLM
 - Чёткий нумерованный список рекомендаций с годами выпуска
 - Полностью оффлайн-режим после первой загрузки моделей
-- Все ключи и секреты через `.env` (если понадобится в будущем)
+- Все ключи и секреты через `.env`
 
 
 ### Быстрый старт
@@ -29,11 +29,15 @@
    ```bash
    pip install -r requirements.txt
    
-3. Добавляем API ключ Mistral
+3. Вставляем Mistral API Key в .env.example
+   ```
+   MISTRAL_API_KEY=paste_your_mistral_api_key_here
+
+4. Добавляем API ключ в окружение
    ```bash
    cp .env.example .env
 
-4. Запуск
+5. Запуск
    ```bash
    streamlit run app_streamlit.py
 
