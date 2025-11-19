@@ -161,23 +161,20 @@ class MovieRAGWithDeepSearch:
 
     def _setup_deep_qa_chain(self):
         """Multi-stage: Retrieve → Rerank → Generate"""
-        template = """You are a precise movie recommender. Use ONLY the provided movie information.
+        template = """You are a precise movie expert. Use ONLY the provided movie information to answer.
 
-MOVIES:
-{context}
-
-USER QUERY: {question}
-
-INSTRUCTIONS:
-1. Find movies that best match the query (plot, mood, genre, era, style).
-2. Recommend 20 movies.
-3. For each: LIST ONLY the TITLE (no extra text).
-4. Output format:
-   - Movie Title 1
-   - Movie Title 2
-   - ...
-
-RECOMMENDED MOVIES:"""
+            MOVIES (Context):
+            {context}
+            
+            USER QUESTION: {question}
+            
+            INSTRUCTIONS:
+            1. Analyze the provided text to find the ONE movie that best answers the specific user question.
+            2. Select exactly 1 movie.
+            3. Return ONLY the exact title of the movie.
+            4. Do not write introductions, numbering, or explanations. Just the title string.
+        
+        RESPONSE:"""
 
         prompt = PromptTemplate(template=template, input_variables=["context", "question"])
 
@@ -231,13 +228,15 @@ RECOMMENDED MOVIES:"""
     def recommend_formatted(self, query: str) -> str:
         result = self.recommend(query)
         output = f"QUERY: {query}\n\n"
-        output += "RECOMMENDED MOVIES:\n"
-        output += "=" * 50 + "\n"
-        output += result['answer']
-        output += "\n\n" + "=" * 50 + "\n\n"
-        output += "RETRIEVED MOVIES:\n"
+        output += "Answer:" + "\n\n"
+
+        description = ""
         for i, doc in enumerate(result['source_documents'], 1):
-            output += f"{i}. {doc['title']} (ID: {doc['tmdb_id']})\n"
+            if doc['title'] == result['answer']:
+                description = doc['content']
+                break
+
+        output += "Based on your description, the most suitable movie is " + description[6:] + ".\n"
         return output
 
     def chat(self, query: str, use_rag: bool = True) -> str:
@@ -259,22 +258,3 @@ RECOMMENDED MOVIES:"""
             ],
             "predicted_titles": result["predicted_titles"]
         }
-
-    def interactive_mode(self):
-        print("=" * 80)
-        print("DEEP MOVIE RAG (English Only)")
-        print("Commands: 'exit', 'search: query' for raw search")
-        print("=" * 80)
-        while True:
-            query = input("\nQuery: ").strip()
-            if query.lower() in ['exit', 'quit', 'q']:
-                print("Goodbye!")
-                break
-            if query.startswith('search:'):
-                q = query[7:].strip()
-                movies = self.search_movies(q, k=5)
-                print("\nRAW SEARCH RESULTS:")
-                for m in movies:
-                    print(f"  • {m['title']} ({m['year']}) - {m['rating']}/10")
-            else:
-                print(self.recommend_formatted(query))

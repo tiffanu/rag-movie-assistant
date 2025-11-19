@@ -20,23 +20,18 @@ Just describe a movie you loved or the vibe you're looking for — I'll find per
 @st.cache_resource(show_spinner="First launch: loading 50k movies and connecting to Mistral… (~30 sec)")
 def get_rag():
     return MovieRAGWithDeepSearch(
-        csv_path="tmdb_5000_movies.csv",
+        csv_path="TMDB_all_movies.csv",
         vector_database_path="data/movie_chroma_db",
         initial_k=30,
         final_k=12
     )
 
 with st.sidebar:
-    st.header("🚀 Ready-made query examples")
+    st.header(" Ready-made query examples")
     examples = [
         "Movies like Interstellar but with more philosophy and no happy ending",
-        "Atmospheric noir in a rainy city, like Blade Runner 2049",
         "Russian comedies from the 2000s like What Men Talk About",
         "Mecha anime but not about teenagers, with an adult protagonist",
-        "Warmer and kinder Christmas movies than Home Alone",
-        "Dark psychological thrillers like Se7en or Zodiac",
-        "70-80s sci-fi with practical effects like Tarkovsky's",
-        "Korean revenge thrillers better than Oldboy",
     ]
 
     for i, ex in enumerate(examples):
@@ -45,8 +40,8 @@ with st.sidebar:
 
     st.divider()
     st.caption("""
-    ⚙️ Engine: Mistral-7B + Chroma + mistral-embed (cloud)  
-    🗃 Database: ~50 000 movies from TMDB  
+     Engine: Mistral-7B + Chroma + mistral-embed (cloud)  
+     Database: ~50 000 movies from TMDB  
     NLP/LLM-25F
     """)
 
@@ -68,7 +63,7 @@ col1, col2 = st.columns([1, 4])
 with col1:
     search_btn = st.button("🔍 Find movies", type="primary", use_container_width=True)
 with col2:
-    clear_btn = st.button("🗑 Clear", use_container_width=True)
+    clear_btn = st.button("Clear", use_container_width=True)
 
 if clear_btn:
     query = ""
@@ -97,7 +92,8 @@ if search_btn or (query := query.strip()):
             st.caption(doc['content'][:500] + "...")
 
 else:
-    st.info("👆 Write a query above and hit the button — I'll find cinematic gems for you!")
+    st.info("Write a query above and click the button — I'll find this movie for you!")
+
 
 st.markdown("---")
 st.markdown(
