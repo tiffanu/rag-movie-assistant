@@ -1,0 +1,7 @@
+streamlit
+pandas
+chromadb
+langchain
+langchain-community
+langchain-mistralai
+python-dotenv
