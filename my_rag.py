@@ -8,7 +8,7 @@ from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
 from langsmith import traceable
 from typing import List, Dict, Any
-from langchain_mistralai import ChatMistralAI
+from langchain_mistralai import ChatMistralAI, MistralAIEmbeddings
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -18,7 +18,7 @@ class MovieRAGWithDeepSearch:
     def __init__(
         self,
         csv_path: str,
-        embedding_model_path: str = "sentence-transformers/all-MiniLM-L6-v2",
+        embedding_model_path: str = "mistral-embed",
         llm_model_path: str = "mistralai/Mistral-7B-Instruct-v0.2",
         vector_database_path: str = "data/movie_chroma_db",
         chunk_size: int = 500,
@@ -63,9 +63,9 @@ class MovieRAGWithDeepSearch:
         self.df = df
 
     def _setup_embeddings(self):
-        self.embeddings = HuggingFaceEmbeddings(
-            model_name=self.embedding_model_path,
-            model_kwargs={'device': self.device}
+        self.embeddings = MistralAIEmbeddings(
+            model="mistral-embed",
+            api_key=os.getenv("MISTRAL_API_KEY")
         )
 
     def _create_document_text(self, row) -> str:
@@ -230,13 +230,14 @@ class MovieRAGWithDeepSearch:
         output = f"QUERY: {query}\n\n"
         output += "Answer:" + "\n\n"
 
-        description = ""
+        description = result['answer']
         for i, doc in enumerate(result['source_documents'], 1):
             if doc['title'] == result['answer']:
-                description = doc['content']
+                pos = doc['content'].find("Plot:")
+                description += "\n\n" + doc['content'][pos:]
                 break
 
-        output += "Based on your description, the most suitable movie is " + description[6:] + ".\n"
+        output += "Based on your description, the most suitable movie is " + description + ".\n"
         return output
 
     def chat(self, query: str, use_rag: bool = True) -> str:
